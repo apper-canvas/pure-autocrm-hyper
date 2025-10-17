@@ -1,4 +1,10 @@
 import dealsData from "@/services/mockData/deals.json";
+const { ApperClient } = window.ApperSDK;
+
+const apperClient = new ApperClient({
+  apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+  apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+});
 
 class DealService {
   constructor() {
@@ -60,27 +66,63 @@ const newDeal = {
     });
   }
 
-  async update(id, dealData) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const deals = this.getData();
-        const index = deals.findIndex(d => d.Id === parseInt(id));
-        if (index !== -1) {
-deals[index] = { 
-            ...deals[index], 
-            ...dealData,
-            notes: dealData.notes || "",
-            updatedAt: new Date().toISOString()
-          };
-          this.saveData(deals);
-          resolve({ ...deals[index] });
-        } else {
-          resolve(null);
+async update(id, dealData) {
+    return new Promise(async (resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          const deals = this.getData();
+          const index = deals.findIndex(d => d.Id === parseInt(id));
+          if (index !== -1) {
+            const oldStatus = deals[index].status;
+            const newStatus = dealData.status;
+            
+            deals[index] = { 
+              ...deals[index], 
+              ...dealData,
+              notes: dealData.notes || "",
+              updatedAt: new Date().toISOString()
+            };
+            
+            // Check if status changed to "won" and generate email
+            if (oldStatus !== "won" && newStatus === "won") {
+              try {
+                const result = await apperClient.functions.invoke(
+                  import.meta.env.VITE_GENERATE_DEAL_EMAIL,
+                  {
+                    body: JSON.stringify({
+                      dealName: deals[index].name,
+                      dealValue: deals[index].value,
+                      contactName: dealData.contactName || "Valued Customer"
+                    }),
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  }
+                );
+
+                if (result.success === false) {
+                  console.info(`apper_info: Got an error in this function: ${import.meta.env.VITE_GENERATE_DEAL_EMAIL}. The response body is: ${JSON.stringify(result)}.`);
+                } else if (result.success && result.email) {
+                  const timestamp = new Date().toLocaleString();
+                  const emailSection = `\n\n--- AI Generated Email (${timestamp}) ---\n${result.email}\n--- End of Generated Email ---`;
+                  deals[index].notes = (deals[index].notes || "") + emailSection;
+                }
+              } catch (error) {
+                console.info(`apper_info: Got this error in this function: ${import.meta.env.VITE_GENERATE_DEAL_EMAIL}. The error is: ${error.message}`);
+              }
+            }
+            
+            this.saveData(deals);
+            resolve({ ...deals[index] });
+          } else {
+            resolve(null);
+          }
+        } catch (error) {
+          reject(error);
         }
       }, 300);
     });
   }
-
   async delete(id) {
     return new Promise((resolve) => {
       setTimeout(() => {

@@ -61,7 +61,7 @@ status: "lead",
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -74,9 +74,24 @@ status: "lead",
         value: parseFloat(formData.value)
       };
       
+      // Check if status changed to "won" for existing deal
+      const statusChangedToWon = deal && deal.status !== "won" && formData.status === "won";
+      
+      if (statusChangedToWon) {
+        // Get contact name for email generation
+        const contact = contacts.find(c => c.Id === parseInt(formData.contactId));
+        dealData.contactName = contact?.name || "Valued Customer";
+        
+        toast.info("Generating congratulatory email...");
+      }
+      
       if (deal) {
         await dealService.update(deal.Id, dealData);
-        toast.success("Deal updated successfully");
+        if (statusChangedToWon) {
+          toast.success("Deal marked as Won! Congratulatory email generated and added to notes.");
+        } else {
+          toast.success("Deal updated successfully");
+        }
       } else {
         await dealService.create(dealData);
         toast.success("Deal created successfully");
@@ -89,7 +104,7 @@ status: "lead",
       setFormData({
         name: "",
         contactId: "",
-value: "",
+        value: "",
         status: "lead",
         notes: ""
       });
@@ -100,7 +115,7 @@ value: "",
     }
   };
 
-  const handleChange = (field) => (e) => {
+const handleChange = (field) => (e) => {
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
