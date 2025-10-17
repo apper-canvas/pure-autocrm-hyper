@@ -1,10 +1,4 @@
 import dealsData from "@/services/mockData/deals.json";
-const { ApperClient } = window.ApperSDK;
-
-const apperClient = new ApperClient({
-  apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-  apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-});
 
 class DealService {
   constructor() {
@@ -83,9 +77,20 @@ async update(id, dealData) {
               updatedAt: new Date().toISOString()
             };
             
-            // Check if status changed to "won" and generate email
+// Check if status changed to "won" and generate email
             if (oldStatus !== "won" && newStatus === "won") {
               try {
+                // Initialize ApperClient only when needed
+                if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+                  throw new Error("ApperSDK not loaded");
+                }
+                
+                const { ApperClient } = window.ApperSDK;
+                const apperClient = new ApperClient({
+                  apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+                  apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+                });
+                
                 const result = await apperClient.functions.invoke(
                   import.meta.env.VITE_GENERATE_DEAL_EMAIL,
                   {
