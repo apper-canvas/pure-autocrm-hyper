@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Modal from "@/components/molecules/Modal";
 import FormField from "@/components/molecules/FormField";
@@ -13,14 +13,32 @@ const DealForm = ({
   onSuccess 
 }) => {
   const [formData, setFormData] = useState({
-    name: deal?.name || "",
-    contactId: deal?.contactId || "",
-    value: deal?.value || "",
-    status: deal?.status || "lead"
+    name: "",
+    contactId: "",
+    value: "",
+    status: "lead"
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Update form data when deal prop changes
+  useEffect(() => {
+    if (deal) {
+      setFormData({
+        name: deal.name || "",
+        contactId: deal.contactId || "",
+        value: deal.value || "",
+        status: deal.status || "lead"
+      });
+    } else {
+      setFormData({
+        name: "",
+        contactId: "",
+        value: "",
+        status: "lead"
+      });
+    }
+  }, [deal]);
   const validateForm = () => {
     const newErrors = {};
     
