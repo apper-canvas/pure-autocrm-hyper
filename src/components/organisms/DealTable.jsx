@@ -108,8 +108,20 @@ const DealTable = ({ deals, contacts, onEdit, onRefresh }) => {
                       "-"
 }
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {deal.notes ? (deal.notes.length > 50 ? deal.notes.substring(0, 50) + '...' : deal.notes) : ''}
+                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                    <div className="truncate">
+                      {deal.notes ? (
+                        deal.notes.length > 50 ? (
+                          <span title={deal.notes}>
+                            {deal.notes.substring(0, 50)}...
+                          </span>
+                        ) : (
+                          deal.notes
+                        )
+                      ) : (
+                        <span className="text-gray-400 italic">No notes</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
