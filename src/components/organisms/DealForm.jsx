@@ -12,11 +12,12 @@ const DealForm = ({
   contacts = [],
   onSuccess 
 }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     contactId: "",
     value: "",
-    status: "lead"
+    status: "lead",
+    notes: ""
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -28,14 +29,16 @@ const DealForm = ({
         name: deal.name || "",
         contactId: deal.contactId || "",
         value: deal.value || "",
-        status: deal.status || "lead"
+status: deal.status || "lead",
+        notes: deal.notes || ""
       });
     } else {
       setFormData({
         name: "",
         contactId: "",
         value: "",
-        status: "lead"
+status: "lead",
+        notes: ""
       });
     }
   }, [deal]);
@@ -86,8 +89,9 @@ const DealForm = ({
       setFormData({
         name: "",
         contactId: "",
-        value: "",
-        status: "lead"
+value: "",
+        status: "lead",
+        notes: ""
       });
     } catch (error) {
       toast.error(`Failed to ${deal ? "update" : "create"} deal`);
@@ -164,8 +168,17 @@ const DealForm = ({
           <option value="negotiation">Negotiation</option>
           <option value="won">Won</option>
           <option value="lost">Lost</option>
+</FormField>
+
+        <FormField label="Notes" htmlFor="notes">
+          <textarea
+            id="notes"
+            value={formData.notes}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-vertical min-h-[100px]"
+            placeholder="Add any additional notes about this deal"
+          />
         </FormField>
-        
         <div className="flex justify-end space-x-3 pt-4">
           <Button
             type="button"

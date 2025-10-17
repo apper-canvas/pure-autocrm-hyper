@@ -46,9 +46,10 @@ class DealService {
       setTimeout(() => {
         const deals = this.getData();
         const maxId = Math.max(...deals.map(d => d.Id), 0);
-        const newDeal = {
+const newDeal = {
           ...dealData,
           Id: maxId + 1,
+          notes: dealData.notes || "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
@@ -65,9 +66,10 @@ class DealService {
         const deals = this.getData();
         const index = deals.findIndex(d => d.Id === parseInt(id));
         if (index !== -1) {
-          deals[index] = { 
+deals[index] = { 
             ...deals[index], 
             ...dealData,
+            notes: dealData.notes || "",
             updatedAt: new Date().toISOString()
           };
           this.saveData(deals);

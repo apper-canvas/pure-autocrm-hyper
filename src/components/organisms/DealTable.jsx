@@ -67,6 +67,9 @@ const DealTable = ({ deals, contacts, onEdit, onRefresh }) => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Updated
+</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Notes
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -103,7 +106,10 @@ const DealTable = ({ deals, contacts, onEdit, onRefresh }) => {
                     {deal.updatedAt ? 
                       format(new Date(deal.updatedAt), "MMM d, yyyy") : 
                       "-"
-                    }
+}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {deal.notes ? (deal.notes.length > 50 ? deal.notes.substring(0, 50) + '...' : deal.notes) : ''}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
