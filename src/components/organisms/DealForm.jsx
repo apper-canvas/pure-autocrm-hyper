@@ -185,12 +185,12 @@ const handleChange = (field) => (e) => {
           <option value="lost">Lost</option>
 </FormField>
 
-        <FormField label="Notes" htmlFor="notes">
+<FormField label="Notes" htmlFor="notes">
           <textarea
             id="notes"
             value={formData.notes}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-vertical min-h-[100px]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-vertical min-h-[100px] text-gray-900"
             placeholder="Add any additional notes about this deal"
           />
         </FormField>
