@@ -1,5 +1,5 @@
 import apper from "https://cdn.apper.io/actions/apper-actions.js";
-import OpenAI from "npm:openai";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 
 apper.serve(async (req) => {
   try {
@@ -78,13 +78,13 @@ apper.serve(async (req) => {
       );
     }
 
-    // Get OpenAI API key from secrets
-    const apiKey = await apper.getSecret("OPENAI_API_KEY");
+// Get Gemini API key from secrets
+    const apiKey = await apper.getSecret("GEMINI_API_KEY");
     if (!apiKey) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "OpenAI API key not configured. Please add OPENAI_API_KEY to your secrets."
+          error: "Gemini API key not configured. Please add GEMINI_API_KEY to your secrets."
         }),
         { 
           status: 500,
@@ -93,8 +93,9 @@ apper.serve(async (req) => {
       );
     }
 
-    // Initialize OpenAI client
-    const openai = new OpenAI({ apiKey });
+    // Initialize Gemini AI client
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Format currency for prompt
     const formattedValue = new Intl.NumberFormat("en-US", {
@@ -103,18 +104,11 @@ apper.serve(async (req) => {
     }).format(value);
 
     // Generate email using OpenAI
-    let completion;
+let result;
     try {
-      completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional business email writer. Generate congratulatory emails for won deals that are warm, professional, and express genuine appreciation. Keep emails concise (3-4 paragraphs) and appropriate for business communication."
-          },
-          {
-            role: "user",
-            content: `Generate a professional congratulatory email for winning a deal with the following details:
+      const prompt = `You are a professional business email writer. Generate congratulatory emails for won deals that are warm, professional, and express genuine appreciation. Keep emails concise (3-4 paragraphs) and appropriate for business communication.
+
+Generate a professional congratulatory email for winning a deal with the following details:
 - Deal Name: ${dealName}
 - Deal Value: ${formattedValue}
 - Contact Name: ${contactName}
@@ -127,17 +121,14 @@ The email should:
 5. Be warm but professional in tone
 6. Include appropriate greeting and closing
 
-Format the email with proper structure (greeting, body paragraphs, closing).`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      });
-    } catch (openaiError) {
+Format the email with proper structure (greeting, body paragraphs, closing).`;
+
+      result = await model.generateContent(prompt);
+    } catch (geminiError) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: `OpenAI API error: ${openaiError.message}`
+          error: `Gemini AI API error: ${geminiError.message}`
         }),
         { 
           status: 502,
@@ -146,14 +137,15 @@ Format the email with proper structure (greeting, body paragraphs, closing).`
       );
     }
 
-    // Extract generated email
-    const generatedEmail = completion.choices[0]?.message?.content;
+// Extract generated email
+    const response = result.response;
+    const generatedEmail = response.text();
     
     if (!generatedEmail) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Failed to generate email content from OpenAI"
+          error: "Failed to generate email content from Gemini AI"
         }),
         { 
           status: 500,
@@ -168,8 +160,8 @@ Format the email with proper structure (greeting, body paragraphs, closing).`
         success: true,
         email: generatedEmail,
         metadata: {
-          model: completion.model,
-          tokensUsed: completion.usage?.total_tokens || 0
+          model: "gemini-1.5-flash",
+          tokensUsed: result.response?.usageMetadata?.totalTokenCount || 0
         }
       }),
       { 
